@@ -6,14 +6,18 @@ import com.demo.updating_brain.entity.User;
 import com.demo.updating_brain.repository.ItemRepository;
 import com.demo.updating_brain.repository.OrderRepository;
 import com.demo.updating_brain.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -24,17 +28,20 @@ public class ShippingMcpTools {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     @Value("${telegram.bot.token:}")
     private String telegramBotToken;
 
     public ShippingMcpTools(ItemRepository itemRepository,
                             OrderRepository orderRepository,
-                            UserRepository userRepository) {
+                            UserRepository userRepository,
+                            ObjectMapper objectMapper) {
         this.itemRepository = itemRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.restTemplate = new RestTemplate();
+        this.objectMapper = objectMapper;
     }
 
     @Tool(name = "get_items_by_order_id", description = "Get all items for an order by orderId. Returns the list of items with their dimensions, weights, and properties.")
@@ -42,72 +49,45 @@ public class ShippingMcpTools {
         return itemRepository.findByOrderId(orderId);
     }
 
-    @Tool(name = "calculate_order_shipping_metrics", description = "Calculate shipping metrics for an order. Returns total volume, weight, max dimensions, and fragile status.")
-    public OrderMetrics calculateOrderMetrics(Long orderId) {
-        List<Item> items = itemRepository.findByOrderId(orderId);
+//    @Tool(name = "calculate_order_shipping_metrics", description = "Calculate shipping metrics for a list of items. Returns the smallest container dimensions needed, total weight, and fragile status.")
+//    public OrderMetrics calculateOrderMetrics(Long orderId, List<Item> items) {
+//        if (items.isEmpty()) {
+//            return new OrderMetrics(orderId, 0, 0.0, 0.0, 0.0, 0.0, false);
+//        }
+//
+//        double totalWeight = 0;
+//        double maxLength = 0;
+//        double maxWidth = 0;
+//        double maxHeight = 0;
+//        boolean hasFragile = false;
+//
+//        for (Item item : items) {
+//            if (item.getLength() != null && item.getWidth() != null && item.getHeight() != null) {
+//                maxLength = Math.max(maxLength, item.getLength());
+//                maxWidth = Math.max(maxWidth, item.getWidth());
+//                maxHeight = Math.max(maxHeight, item.getHeight());
+//            }
+//
+//            if (item.getWeightKg() != null) {
+//                totalWeight += item.getWeightKg();
+//            }
+//
+//            if (item.getFragile() != null && item.getFragile()) {
+//                hasFragile = true;
+//            }
+//        }
+//
+//        return new OrderMetrics(orderId, items.size(), totalWeight, maxLength, maxWidth, maxHeight, hasFragile);
+//    }
 
-        if (items.isEmpty()) {
-            return new OrderMetrics(orderId, 0, 0.0, 0.0, 0.0, 0.0, 0.0, false);
-        }
-
-        double totalVolume = 0;
-        double totalWeight = 0;
-        double maxLength = 0;
-        double maxWidth = 0;
-        double maxHeight = 0;
-        boolean hasFragile = false;
-
-        for (Item item : items) {
-            if (item.getLength() != null && item.getWidth() != null && item.getHeight() != null) {
-                double itemVolume = item.getLength() * item.getWidth() * item.getHeight();
-                totalVolume += itemVolume;
-
-                maxLength = Math.max(maxLength, item.getLength());
-                maxWidth = Math.max(maxWidth, item.getWidth());
-                maxHeight = Math.max(maxHeight, item.getHeight());
-            }
-
-            if (item.getWeightKg() != null) {
-                totalWeight += item.getWeightKg();
-            }
-
-            if (item.getFragile() != null && item.getFragile()) {
-                hasFragile = true;
-            }
-        }
-
-        return new OrderMetrics(orderId, items.size(), totalVolume, totalWeight,
-                                maxLength, maxWidth, maxHeight, hasFragile);
+    @Tool(name = "get_order_by_id", description = "Get order details by orderId. Returns the Order object with status, locationCity, destination, and estimationDate.")
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId).orElse(null);
     }
 
-    public record OrderMetrics(
-            Long orderId,
-            int itemCount,
-            double totalVolumeCm3,
-            double totalWeightKg,
-            double maxLengthCm,
-            double maxWidthCm,
-            double maxHeightCm,
-            boolean hasFragileItems
-    ) {}
-
-    @Tool(name = "get_telegram_channel_by_order_id", description = "Get the user's Telegram channel associated with an order. Returns the Telegram channel username.")
-    public String getTelegramChannelByOrderId(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElse(null);
-
-        if (order == null) {
-            return "Order not found with ID: " + orderId;
-        }
-
-        User user = userRepository.findById(order.getUserId())
-                .orElse(null);
-
-        if (user == null) {
-            return "User not found for order ID: " + orderId;
-        }
-
-        return user.getTelegramChannel();
+    @Tool(name = "get_user_by_order_id", description = "Find the user associated with an order by orderId. Returns the User object with their details.")
+    public User getUserByOrderId(Long orderId) {
+        return userRepository.findByOrderId(orderId);
     }
 
     @Tool(name = "send_telegram_message", description = "Send a message to a user's Telegram channel. Provide the Telegram channel (e.g., @username) and the message text.")

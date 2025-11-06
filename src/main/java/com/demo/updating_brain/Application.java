@@ -2,6 +2,7 @@ package com.demo.updating_brain;
 
 import com.demo.updating_brain.entity.Item;
 import com.demo.updating_brain.entity.Order;
+import com.demo.updating_brain.entity.OrderStatus;
 import com.demo.updating_brain.entity.User;
 import com.demo.updating_brain.repository.ItemRepository;
 import com.demo.updating_brain.repository.OrderRepository;
@@ -16,6 +17,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @SpringBootApplication
@@ -44,10 +46,10 @@ public class Application {
 //			userRepo.save(user1);
 //			userRepo.save(user2);
 //
-//			Order order1 = new Order(user1.getId());
-//			Order order2 = new Order(user1.getId());
-//			Order order3 = new Order(user2.getId());
-//			Order order4 = new Order(user2.getId());
+//			Order order1 = new Order(user1.getId(), OrderStatus.PENDING, "Paris", "Berlin", LocalDate.of(2025, 11, 15));
+//			Order order2 = new Order(user1.getId(), OrderStatus.SHIPPED, "Lyon", "Madrid", LocalDate.of(2025, 11, 10));
+//			Order order3 = new Order(user2.getId(), OrderStatus.DELIVERED, "Marseille", "Rome", LocalDate.of(2025, 11, 8));
+//			Order order4 = new Order(user2.getId(), OrderStatus.PENDING, "Toulouse", "Barcelona", LocalDate.of(2025, 11, 20));
 //			orderRepo.saveAll(List.of(order1, order2, order3, order4));
 //
 //			// Create items for orders
