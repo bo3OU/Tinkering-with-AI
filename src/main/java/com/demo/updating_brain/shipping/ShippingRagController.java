@@ -17,13 +17,16 @@ import java.util.List;
 public class ShippingRagController {
 
     private final ChatClient chatClient;
+    private final ShippingMcpTools shippingMcpTools;
 
     public ShippingRagController(
             ChatClient.Builder builder,
-            @Qualifier("shippingVectorStore") VectorStore shippingVectorStore) {
+            @Qualifier("shippingVectorStore") VectorStore shippingVectorStore,
+            ShippingMcpTools shippingMcpTools) {
         this.chatClient = builder
                 .defaultAdvisors(new QuestionAnswerAdvisor(shippingVectorStore))
                 .build();
+        this.shippingMcpTools = shippingMcpTools;
     }
 
     @GetMapping("/query-containers")
@@ -31,6 +34,8 @@ public class ShippingRagController {
                description = "Query the vector store to get information about available shipping containers")
     public String queryContainers(@RequestParam("query") String query) {
         return chatClient.prompt()
+                .tools(shippingMcpTools)
+                .tools()
                 .user(query)
                 .call()
                 .content();
