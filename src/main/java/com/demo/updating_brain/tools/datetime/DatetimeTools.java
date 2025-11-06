@@ -11,7 +11,7 @@ public class DatetimeTools {
 
     @Tool(description = "Get the current date and time in user's timezone")
     public static String getCurrentDateTime() {
-        IO.println("requested today's date");
+        System.out.println("requested today's date");
         return LocalDateTime.now().atZone(LocaleContextHolder.getTimeZone().toZoneId()).toString();
     }
 }

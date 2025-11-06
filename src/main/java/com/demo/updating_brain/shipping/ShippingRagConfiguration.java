@@ -1,4 +1,4 @@
-package com.demo.updating_brain.rag;
+package com.demo.updating_brain.shipping;
 
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -16,20 +16,21 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @Configuration
-public class RagConfiguration {
+public class ShippingRagConfiguration {
 
-    @Value("classpath:/data/models.json")
-    private Resource models;
+    @Value("classpath:/data/shippingContainers.json")
+    private Resource shippingContainers;
 
-    @Bean
-    SimpleVectorStore simpleVectorStore(EmbeddingModel embeddingModel) {
+    @Bean(name = "shippingVectorStore")
+    SimpleVectorStore shippingVectorStore(EmbeddingModel embeddingModel) {
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(embeddingModel).build();
-        File vectorStoreFile = getVectorStoreFile();
+        File vectorStoreFile = getShippingVectorStoreFile();
+
         if(vectorStoreFile.exists()) {
             simpleVectorStore.load(vectorStoreFile);
         } else {
-            TextReader textReader = new TextReader(models);
-            textReader.getCustomMetadata().put("filename","models.txt");
+            TextReader textReader = new TextReader(shippingContainers);
+            textReader.getCustomMetadata().put("filename","shippingContainers.json");
             List<Document> documents = textReader.get();
             TokenTextSplitter tokenTextSplitter = new TokenTextSplitter();
             List<Document> splitDocuments = tokenTextSplitter.split(documents);
@@ -40,8 +41,8 @@ public class RagConfiguration {
         return simpleVectorStore;
     }
 
-    private File getVectorStoreFile() {
-        String vectorStoreName = "vectorstore.json";
+    private File getShippingVectorStoreFile() {
+        String vectorStoreName = "shippingContainersVector.json";
         String absolutePath = "/tmp/" + vectorStoreName;
         return new File(absolutePath);
     }

@@ -24,7 +24,7 @@ public class ChatController {
                 .user("15+17, answer only")
                 .call()
                 .content();
-        IO.println(tellMeSomethingAboutJava);
+        System.out.println(tellMeSomethingAboutJava);
         return tellMeSomethingAboutJava;
     }
 
