@@ -9,11 +9,10 @@ import com.demo.updating_brain.shipping.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,7 @@ public class ShippingMcpTools {
     private final ItemRepository itemRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
 
     @Value("${telegram.bot.token:}")
     private String telegramBotToken;
@@ -36,7 +35,7 @@ public class ShippingMcpTools {
         this.itemRepository = itemRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
-        this.restTemplate = new RestTemplate();
+        this.restClient = RestClient.create();
     }
 
     @Tool(name = "get_items_by_order_id", description = "Get all items for an order by orderId. Returns the list of items with their dimensions, weights, and properties.")
@@ -94,17 +93,18 @@ public class ShippingMcpTools {
         try {
             String url = String.format("https://api.telegram.org/bot%s/sendMessage", telegramBotToken);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
             Map<String, Object> requestBody = Map.of(
                 "chat_id", telegramChannel,
                 "text", message,
                 "parse_mode", "Markdown"
             );
 
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            Map<String, Object> response = restTemplate.postForObject(url, request, Map.class);
+            Map<String, Object> response = restClient.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<>() {});
 
             if (response != null && Boolean.TRUE.equals(response.get("ok"))) {
                 return "Message sent successfully to " + telegramChannel;

@@ -1,9 +1,6 @@
 package com.demo.updating_brain;
 
-import com.demo.updating_brain.shipping.entity.Item;
-import com.demo.updating_brain.shipping.entity.Order;
-import com.demo.updating_brain.shipping.entity.OrderStatus;
-import com.demo.updating_brain.shipping.entity.User;
+import com.demo.updating_brain.prreview.service.PrReviewTools;
 import com.demo.updating_brain.shipping.repository.ItemRepository;
 import com.demo.updating_brain.shipping.repository.OrderRepository;
 import com.demo.updating_brain.shipping.repository.UserRepository;
@@ -17,26 +14,30 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SpringBootApplication
 @EntityScan("com.demo.updating_brain.shipping.entity")
 @EnableJpaRepositories(basePackages = "com.demo.updating_brain.shipping.repository")
 public class Application {
 
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 
-	@Bean
-	public List<ToolCallback> springIOShippingTools(ShippingMcpTools shippingMcpTools) {
-		return List.of(ToolCallbacks.from(shippingMcpTools));
-	}
+    @Bean
+    public List<ToolCallback> springIOShippingTools(ShippingMcpTools shippingMcpTools, PrReviewTools prReviewTools) {
+        return Stream
+                .concat(Stream.of(ToolCallbacks.from(prReviewTools)),
+                    Stream.of(ToolCallbacks.from(shippingMcpTools)))
+                .collect(Collectors.toList());
+    }
 
-	@Bean
-	CommandLineRunner initDatabase(UserRepository userRepo, OrderRepository orderRepo, ItemRepository itemRepo) {
-		return args -> {
+    @Bean
+    CommandLineRunner initDatabase(UserRepository userRepo, OrderRepository orderRepo, ItemRepository itemRepo) {
+        return args -> {
 //			itemRepo.deleteAll();
 //			orderRepo.deleteAll();
 //			userRepo.deleteAll();
@@ -160,6 +161,6 @@ public class Application {
 //
 //			itemRepo.saveAll(List.of(laptop, mouse, book1, book2, book3,
 //			                          tshirt, jeans, jacket, vase, plates));
-		};
-	}
+        };
+    }
 }
