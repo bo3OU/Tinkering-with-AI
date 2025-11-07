@@ -1,4 +1,4 @@
-package com.demo.updating_brain.prreview.dto;
+package com.demo.updating_brain.geopost.prreview.dto;
 
 import java.util.List;
 

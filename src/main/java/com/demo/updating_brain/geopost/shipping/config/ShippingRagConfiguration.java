@@ -1,4 +1,4 @@
-package com.demo.updating_brain.shipping.config;
+package com.demo.updating_brain.geopost.shipping.config;
 
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -20,6 +20,9 @@ public class ShippingRagConfiguration {
 
     @Value("classpath:/data/shippingContainers.json")
     private Resource shippingContainers;
+
+    @Value("${vector.store.path}")
+    private String vectorStorePath;
 
     @Bean(name = "shippingVectorStore")
     SimpleVectorStore shippingVectorStore(EmbeddingModel embeddingModel) {
@@ -43,7 +46,7 @@ public class ShippingRagConfiguration {
 
     private File getShippingVectorStoreFile() {
         String vectorStoreName = "shippingContainersVector.json";
-        String absolutePath = "/tmp/" + vectorStoreName;
+        String absolutePath = vectorStorePath + vectorStoreName;
         return new File(absolutePath);
     }
 }

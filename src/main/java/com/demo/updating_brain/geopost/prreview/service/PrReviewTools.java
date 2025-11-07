@@ -1,9 +1,9 @@
-package com.demo.updating_brain.prreview.service;
+package com.demo.updating_brain.geopost.prreview.service;
 
-import com.demo.updating_brain.prreview.dto.CodeIssue;
-import com.demo.updating_brain.prreview.dto.FileChange;
-import com.demo.updating_brain.prreview.dto.PrReviewResult;
-import com.demo.updating_brain.prreview.dto.PullRequestData;
+import com.demo.updating_brain.geopost.prreview.dto.CodeIssue;
+import com.demo.updating_brain.geopost.prreview.dto.FileChange;
+import com.demo.updating_brain.geopost.prreview.dto.PrReviewResult;
+import com.demo.updating_brain.geopost.prreview.dto.PullRequestData;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -11,10 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class PrReviewTools {
@@ -172,6 +169,123 @@ public class PrReviewTools {
 
         } catch (Exception e) {
             return "Error creating Notion page: " + e.getMessage();
+        }
+    }
+
+    @Tool(name = "create_fix_pull_request", description = "Creates a new empty pull request to track the issues found")
+    public String createFixPullRequest(int originalPrNumber, List<CodeIssue> issues) {
+        if (githubToken == null || githubToken.isEmpty()) {
+            return "GitHub token not configured";
+        }
+
+        if (issues == null || issues.isEmpty()) {
+            return "No issues to fix";
+        }
+
+        try {
+            // 1. Get original PR details to find head branch
+            String prUrl = String.format("https://api.github.com/repos/%s/%s/pulls/%d",
+                    repoOwner, repoName, originalPrNumber);
+
+            Map<String, Object> prData = restClient.get()
+                    .uri(prUrl)
+                    .header("Authorization", "Bearer " + githubToken)
+                    .header("Accept", "application/vnd.github+json")
+                    .header("X-GitHub-Api-Version", "2022-11-28")
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<>() {});
+
+            Map<String, Object> headInfo = (Map<String, Object>) prData.get("head");
+            String headBranch = (String) headInfo.get("ref");
+
+            // 2. Get head branch SHA
+            String refUrl = String.format("https://api.github.com/repos/%s/%s/git/ref/heads/%s",
+                    repoOwner, repoName, headBranch);
+
+            Map<String, Object> refData = restClient.get()
+                    .uri(refUrl)
+                    .header("Authorization", "Bearer " + githubToken)
+                    .header("Accept", "application/vnd.github+json")
+                    .header("X-GitHub-Api-Version", "2022-11-28")
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<>() {});
+
+            Map<String, Object> object = (Map<String, Object>) refData.get("object");
+            String headSha = (String) object.get("sha");
+
+            // 3. Create new branch from the head of the PR being reviewed
+            String newBranchName = "fix/pr-" + originalPrNumber + "-issues";
+            String createRefUrl = String.format("https://api.github.com/repos/%s/%s/git/refs",
+                    repoOwner, repoName);
+
+            Map<String, Object> createRefBody = Map.of(
+                    "ref", "refs/heads/" + newBranchName,
+                    "sha", headSha
+            );
+
+            try {
+                restClient.post()
+                        .uri(createRefUrl)
+                        .header("Authorization", "Bearer " + githubToken)
+                        .header("Accept", "application/vnd.github+json")
+                        .header("X-GitHub-Api-Version", "2022-11-28")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(createRefBody)
+                        .retrieve()
+                        .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+            } catch (Exception e) {
+                // Branch might already exist, try to update it
+                String updateRefUrl = String.format("https://api.github.com/repos/%s/%s/git/refs/heads/%s",
+                        repoOwner, repoName, newBranchName);
+                restClient.patch()
+                        .uri(updateRefUrl)
+                        .header("Authorization", "Bearer " + githubToken)
+                        .header("Accept", "application/vnd.github+json")
+                        .header("X-GitHub-Api-Version", "2022-11-28")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(Map.of("sha", headSha, "force", true))
+                        .retrieve()
+                        .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+            }
+
+            // 4. Build PR body with issues list
+            StringBuilder prBody = new StringBuilder();
+            prBody.append("## Issues Found in PR #").append(originalPrNumber).append("\n\n");
+            prBody.append("This PR tracks ").append(issues.size()).append(" issue(s) that need to be fixed:\n\n");
+
+            for (int i = 0; i < issues.size(); i++) {
+                CodeIssue issue = issues.get(i);
+                prBody.append("### ").append(i + 1).append(". ").append(issue.severity()).append(": ").append(issue.description()).append("\n");
+                prBody.append("**File:** ").append(issue.fileName()).append(" (Line: ").append(issue.lineNumber()).append(")\n\n");
+                prBody.append("**Problematic Code:**\n```java\n").append(issue.problematicCode()).append("\n```\n\n");
+                prBody.append("**Suggested Fix:**\n```java\n").append(issue.suggestedFix()).append("\n```\n\n");
+            }
+
+            // 5. Create pull request targeting the original PR's head branch
+            String createPrUrl = String.format("https://api.github.com/repos/%s/%s/pulls",
+                    repoOwner, repoName);
+
+            Map<String, Object> createPrBody = Map.of(
+                    "title", "Fix: Issues found in PR #" + originalPrNumber,
+                    "body", prBody.toString(),
+                    "head", newBranchName,
+                    "base", headBranch
+            );
+
+            Map<String, Object> newPr = restClient.post()
+                    .uri(createPrUrl)
+                    .header("Authorization", "Bearer " + githubToken)
+                    .header("Accept", "application/vnd.github+json")
+                    .header("X-GitHub-Api-Version", "2022-11-28")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(createPrBody)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<>() {});
+
+            return "Fix PR created successfully: " + newPr.get("html_url");
+
+        } catch (Exception e) {
+            return "Error creating fix PR: " + e.getMessage();
         }
     }
 

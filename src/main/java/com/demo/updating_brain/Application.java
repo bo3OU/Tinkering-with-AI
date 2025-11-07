@@ -1,10 +1,10 @@
 package com.demo.updating_brain;
 
-import com.demo.updating_brain.prreview.service.PrReviewTools;
-import com.demo.updating_brain.shipping.repository.ItemRepository;
-import com.demo.updating_brain.shipping.repository.OrderRepository;
-import com.demo.updating_brain.shipping.repository.UserRepository;
-import com.demo.updating_brain.shipping.service.ShippingMcpTools;
+import com.demo.updating_brain.geopost.prreview.service.PrReviewTools;
+import com.demo.updating_brain.geopost.shipping.repository.ItemRepository;
+import com.demo.updating_brain.geopost.shipping.repository.OrderRepository;
+import com.demo.updating_brain.geopost.shipping.repository.UserRepository;
+import com.demo.updating_brain.geopost.shipping.service.ShippingMcpTools;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.boot.CommandLineRunner;
@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SpringBootApplication
-@EntityScan("com.demo.updating_brain.shipping.entity")
-@EnableJpaRepositories(basePackages = "com.demo.updating_brain.shipping.repository")
+@EntityScan("com.demo.updating_brain.geopost.shipping.entity")
+@EnableJpaRepositories(basePackages = "com.demo.updating_brain.geopost.shipping.repository")
 public class Application {
 
     public static void main(String[] args) {

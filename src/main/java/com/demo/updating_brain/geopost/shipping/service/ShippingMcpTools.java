@@ -1,11 +1,11 @@
-package com.demo.updating_brain.shipping.service;
+package com.demo.updating_brain.geopost.shipping.service;
 
-import com.demo.updating_brain.shipping.entity.Item;
-import com.demo.updating_brain.shipping.entity.Order;
-import com.demo.updating_brain.shipping.entity.User;
-import com.demo.updating_brain.shipping.repository.ItemRepository;
-import com.demo.updating_brain.shipping.repository.OrderRepository;
-import com.demo.updating_brain.shipping.repository.UserRepository;
+import com.demo.updating_brain.geopost.shipping.entity.Item;
+import com.demo.updating_brain.geopost.shipping.entity.Order;
+import com.demo.updating_brain.geopost.shipping.entity.User;
+import com.demo.updating_brain.geopost.shipping.repository.ItemRepository;
+import com.demo.updating_brain.geopost.shipping.repository.OrderRepository;
+import com.demo.updating_brain.geopost.shipping.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.annotation.Value;

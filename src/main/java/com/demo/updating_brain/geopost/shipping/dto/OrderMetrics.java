@@ -1,4 +1,4 @@
-package com.demo.updating_brain.shipping.dto;
+package com.demo.updating_brain.geopost.shipping.dto;
 
 public record OrderMetrics(
         Long orderId,
