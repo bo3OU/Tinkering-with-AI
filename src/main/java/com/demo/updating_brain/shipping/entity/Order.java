@@ -1,4 +1,4 @@
-package com.demo.updating_brain.entity;
+package com.demo.updating_brain.shipping.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;

@@ -1,13 +1,13 @@
 package com.demo.updating_brain;
 
-import com.demo.updating_brain.entity.Item;
-import com.demo.updating_brain.entity.Order;
-import com.demo.updating_brain.entity.OrderStatus;
-import com.demo.updating_brain.entity.User;
-import com.demo.updating_brain.repository.ItemRepository;
-import com.demo.updating_brain.repository.OrderRepository;
-import com.demo.updating_brain.repository.UserRepository;
-import com.demo.updating_brain.shipping.ShippingMcpTools;
+import com.demo.updating_brain.shipping.entity.Item;
+import com.demo.updating_brain.shipping.entity.Order;
+import com.demo.updating_brain.shipping.entity.OrderStatus;
+import com.demo.updating_brain.shipping.entity.User;
+import com.demo.updating_brain.shipping.repository.ItemRepository;
+import com.demo.updating_brain.shipping.repository.OrderRepository;
+import com.demo.updating_brain.shipping.repository.UserRepository;
+import com.demo.updating_brain.shipping.service.ShippingMcpTools;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.boot.CommandLineRunner;
@@ -21,8 +21,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 @SpringBootApplication
-@EntityScan("com.demo.updating_brain.entity")
-@EnableJpaRepositories(basePackages = "com.demo.updating_brain")
+@EntityScan("com.demo.updating_brain.shipping.entity")
+@EnableJpaRepositories(basePackages = "com.demo.updating_brain.shipping.repository")
 public class Application {
 
 	public static void main(String[] args) {

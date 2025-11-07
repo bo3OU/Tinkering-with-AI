@@ -1,6 +1,6 @@
-package com.demo.updating_brain.repository;
+package com.demo.updating_brain.shipping.repository;
 
-import com.demo.updating_brain.entity.User;
+import com.demo.updating_brain.shipping.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

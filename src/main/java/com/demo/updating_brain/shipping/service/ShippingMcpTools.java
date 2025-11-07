@@ -1,23 +1,20 @@
-package com.demo.updating_brain.shipping;
+package com.demo.updating_brain.shipping.service;
 
-import com.demo.updating_brain.entity.Item;
-import com.demo.updating_brain.entity.Order;
-import com.demo.updating_brain.entity.User;
-import com.demo.updating_brain.repository.ItemRepository;
-import com.demo.updating_brain.repository.OrderRepository;
-import com.demo.updating_brain.repository.UserRepository;
+import com.demo.updating_brain.shipping.entity.Item;
+import com.demo.updating_brain.shipping.entity.Order;
+import com.demo.updating_brain.shipping.entity.User;
+import com.demo.updating_brain.shipping.repository.ItemRepository;
+import com.demo.updating_brain.shipping.repository.OrderRepository;
+import com.demo.updating_brain.shipping.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +25,6 @@ public class ShippingMcpTools {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
 
     @Value("${telegram.bot.token:}")
     private String telegramBotToken;
@@ -41,7 +37,6 @@ public class ShippingMcpTools {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.restTemplate = new RestTemplate();
-        this.objectMapper = objectMapper;
     }
 
     @Tool(name = "get_items_by_order_id", description = "Get all items for an order by orderId. Returns the list of items with their dimensions, weights, and properties.")

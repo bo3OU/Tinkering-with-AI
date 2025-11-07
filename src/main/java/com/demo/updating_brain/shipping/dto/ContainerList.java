@@ -1,4 +1,4 @@
-package com.demo.updating_brain.shipping;
+package com.demo.updating_brain.shipping.dto;
 
 import java.util.List;
 

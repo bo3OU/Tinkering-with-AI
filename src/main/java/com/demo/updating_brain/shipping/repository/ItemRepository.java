@@ -1,6 +1,6 @@
-package com.demo.updating_brain.repository;
+package com.demo.updating_brain.shipping.repository;
 
-import com.demo.updating_brain.entity.Item;
+import com.demo.updating_brain.shipping.entity.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

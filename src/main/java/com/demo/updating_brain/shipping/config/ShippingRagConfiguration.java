@@ -1,4 +1,4 @@
-package com.demo.updating_brain.shipping;
+package com.demo.updating_brain.shipping.config;
 
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
