@@ -22,10 +22,6 @@ public class ChatController {
     public String chat() {
         String tellMeSomethingAboutJava = chatClient.prompt()
                 .user("15+17, answer only")
-                .call()
-                .content();
-        System.out.println(tellMeSomethingAboutJava);
-        return tellMeSomethingAboutJava;
     }
 
     @GetMapping("/stream")
